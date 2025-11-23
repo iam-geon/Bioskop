@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaXX - Pesan Tiket Bioskop Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-login:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Carousel */
+        .carousel {
+            position: relative;
+            height: 400px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .carousel-slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-slide.active {
+            display: block;
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.8);
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+
+        .carousel-btn.prev { left: 20px; }
+        .carousel-btn.next { right: 20px; }
+
+        /* Search Bar */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input, .search-bar select {
+            flex: 1;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* Film Cards */
+        .film-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .film-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .film-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .film-poster {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .film-info {
+            padding: 1rem;
+        }
+
+        .film-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .film-meta {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-pesan {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-pesan:hover {
+            opacity: 0.9;
+        }
+
+        /* Seat Selection */
+        .seat-layout {
+            margin: 2rem 0;
+        }
+
+        .screen {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            border-radius: 50px 50px 0 0;
+        }
+
+        .seats-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .seat {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .seat.available {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+
+        .seat.occupied {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .seat.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+        }
+
+        /* Summary */
+        .summary {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .summary-total {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #667eea;
+            border-top: 2px solid #ddd;
+            padding-top: 1rem;
+        }
+
+        /* Payment Form */
+        .payment-form {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .payment-method {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .payment-method.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        /* Success */
+        .success-message {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .success-icon {
+            font-size: 5rem;
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #333, #666);
+            margin: 2rem auto;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(255, 255, 255, 0.95);
+            margin-top: 3rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .film-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .carousel {
+                height: 250px;
+            }
+        }
+
+        .filter-sidebar {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group h3 {
+            margin-bottom: 0.8rem;
+            color: #333;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .jadwal-options {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .jadwal-btn {
+            padding: 1rem 2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .jadwal-btn:hover {
+            border-color: #667eea;
+        }
+
+        .jadwal-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">🎬 CinemaXX</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showPage('beranda')">Beranda</a></li>
+                <li><a href="#" onclick="showPage('film')">Film</a></li>
+                <li><a href="#" onclick="showPage('jadwal')">Jadwal</a></li>
+                <li><a href="#">Akun</a></li>
+            </ul>
+            <div class="auth-buttons">
+                <button class="btn btn-login">Login</button>
+                <button class="btn btn-signup">Signup</button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Page: Beranda -->
+        <div id="beranda" class="page active">
+            <div class="carousel">
+                <div class="carousel-slide active" style="background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                    🎬 Film 1
+                </div>
+                <div class="carousel-slide" style="background: linear-gradient(135deg, #f093fb, #f5576c); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                    🎬 Film 2
+                </div>
+                <div class="carousel-slide" style="background: linear-gradient(135deg, #4facfe, #00f2fe); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                    🎬 Film 3
+                </div>
+                <button class="carousel-btn prev" onclick="changeSlide(-1)">‹</button>
+                <button class="carousel-btn next" onclick="changeSlide(1)">›</button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" placeholder="Cari Film...">
+                <select>
+                    <option>Pilih Lokasi</option>
+                    <option>Mall A</option>
+                    <option>Mall B</option>
+                    <option>Mall C</option>
+                </select>
+                <input type="date">
+            </div>
+
+            <h2 style="margin-bottom: 1.5rem;">Film Sedang Tayang</h2>
+            <div class="film-grid">
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Avengers Endgame</div>
+                        <div class="film-meta">⭐ 8.4/10 | ⏱ 181 min</div>
+                        <button class="btn-pesan" onclick="pesanFilm('Avengers Endgame')">Pesan Tiket</button>
+                    </div>
+                </div>
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Spider-Man: No Way Home</div>
+                        <div class="film-meta">⭐ 8.7/10 | ⏱ 148 min</div>
+                        <button class="btn-pesan" onclick="pesanFilm('Spider-Man: No Way Home')">Pesan Tiket</button>
+                    </div>
+                </div>
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Dune: Part Two</div>
+                        <div class="film-meta">⭐ 8.9/10 | ⏱ 166 min</div>
+                        <button class="btn-pesan" onclick="pesanFilm('Dune: Part Two')">Pesan Tiket</button>
+                    </div>
+                </div>
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Oppenheimer</div>
+                        <div class="film-meta">⭐ 8.5/10 | ⏱ 180 min</div>
+                        <button class="btn-pesan" onclick="pesanFilm('Oppenheimer')">Pesan Tiket</button>
+                    </div>
+                </div>
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">The Batman</div>
+                        <div class="film-meta">⭐ 7.9/10 | ⏱ 176 min</div>
+                        <button class="btn-pesan" onclick="pesanFilm('The Batman')">Pesan Tiket</button>
+                    </div>
+                </div>
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Guardians of Galaxy Vol. 3</div>
+                        <div class="film-meta">⭐ 8.1/10 | ⏱ 150 min</div>
+                        <button class="btn-pesan" onclick="pesanFilm('Guardians of Galaxy Vol. 3')">Pesan Tiket</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Film dengan Filter -->
+        <div id="film" class="page">
+            <h2 style="margin-bottom: 1.5rem;">Daftar Film</h2>
+            
+            <div class="filter-sidebar">
+                <div class="filter-group">
+                    <h3>Genre</h3>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox"> Action</label>
+                        <label><input type="checkbox"> Drama</label>
+                        <label><input type="checkbox"> Comedy</label>
+                        <label><input type="checkbox"> Horror</label>
+                        <label><input type="checkbox"> Sci-Fi</label>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Bioskop</h3>
+                    <select style="width: 100%; padding: 0.5rem; border-radius: 6px;">
+                        <option>Semua Bioskop</option>
+                        <option>Mall A</option>
+                        <option>Mall B</option>
+                        <option>Mall C</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Waktu</h3>
+                    <select style="width: 100%; padding: 0.5rem; border-radius: 6px;">
+                        <option>Semua Waktu</option>
+                        <option>10:00</option>
+                        <option>14:00</option>
+                        <option>18:00</option>
+                        <option>21:00</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <h3>Harga</h3>
+                    <input type="range" min="20000" max="100000" value="50000" style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                        <span>Rp20k</span>
+                        <span>Rp100k</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="film-grid">
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Avengers Endgame</div>
+                        <div class="film-meta">⭐ 8.4/10 | ⏱ 181 min</div>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Superhero team battles ultimate villain...</p>
+                        <button class="btn-pesan" onclick="showPage('jadwal')">Pilih Jadwal</button>
+                    </div>
+                </div>
+                <div class="film-card">
+                    <div class="film-poster">🎬</div>
+                    <div class="film-info">
+                        <div class="film-title">Inception</div>
+                        <div class="film-meta">⭐ 8.8/10 | ⏱ 148 min</div>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">A mind-bending thriller about dreams...</p>
+                        <button class="btn-pesan" onclick="showPage('jadwal')">Pilih Jadwal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Jadwal & Pilih Kursi -->
+        <div id="jadwal" class="page">
+            <h2 style="margin-bottom: 1.5rem;">Pilih Jadwal & Kursi</h2>
+            
+            <div class="form-group">
+                <label>Bioskop</label>
+                <select>
+                    <option>Mall A</option>
+                    <option>Mall B</option>
+                    <option>Mall C</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date">
+            </div>
+
+            <div class="form-group">
+                <label>Jadwal Tayang</label>
+                <div class="jadwal-options">
+                    <button class="jadwal-btn" onclick="selectJadwal(this, '10:00')">10:00</button>
+                    <button class="jadwal-btn active" onclick="selectJadwal(this, '14:00')">14:00</button>
+                    <button class="jadwal-btn" onclick="selectJadwal(this, '18:00')">18:00</button>
+                    <button class="jadwal-btn" onclick="selectJadwal(this, '21:00')">21:00</button>
+                </div>
+            </div>
+
+            <div class="seat-layout">
+                <div class="screen">LAYAR BIOSKOP</div>
+                
+                <div class="seats-row">
+                    <div class="seat available" onclick="selectSeat(this, 'A1')">A1</div>
+                    <div class="seat available" onclick="selectSeat(this, 'A2')">A2</div>
+                    <div class="seat available" onclick="selectSeat(this, 'A3')">A3</div>
+                    <div class="seat occupied">A4</div>
+                    <div class="seat available" onclick="selectSeat(this, 'A5')">A5</div>
+                </div>
+                <div class="seats-row">
+                    <div class="seat available" onclick="selectSeat(this, 'B1')">B1</div>
+                    <div class="seat occupied">B2</div>
+                    <div class="seat available" onclick="selectSeat(this, 'B3')">B3</div>
+                    <div class="seat available" onclick="selectSeat(this, 'B4')">B4</div>
+                    <div class="seat available" onclick="selectSeat(this, 'B5')">B5</div>
+                </div>
+                <div class="seats-row">
+                    <div class="seat available" onclick="selectSeat(this, 'C1')">C1</div>
+                    <div class="seat available" onclick="selectSeat(this, 'C2')">C2</div>
+                    <div class="seat occupied">C3</div>
+                    <div class="seat available" onclick="selectSeat(this, 'C4')">C4</div>
+                    <div class="seat available" onclick="selectSeat(this, 'C5')">C5</div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #4CAF50;"></div>
+                        <span>Tersedia</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #f44336;"></div>
+                        <span>Terisi</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #667eea;"></div>
+                        <span>Dipilih</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary">
+                <div class="summary-item">
+                    <span>Film:</span>
+                    <span id="filmName">Avengers Endgame</span>
+                </div>
+                <div class="summary-item">
+                    <span>Waktu:</span>
+                    <span id="waktu">14:00</span>
+                </div>
+                <div class="summary-item">
+                    <span>Bioskop:</span>
+                    <span>Mall A</span>
+                </div>
+                <div class="summary-item">
+                    <span>Kursi:</span>
+                    <span id="selectedSeats">-</span>
+                </div>
+                <div class="summary-item summary-total">
+                    <span>Total:</span>
+                    <span id="totalPrice">Rp0</span>
+                </div>
+                <button class="btn-pesan" onclick="showPage('pembayaran')">Lanjut ke Pembayaran</button>
+            </div>
+        </div>
+
+        <!-- Page: Pembayaran -->
+        <div id="pembayaran" class="page">
+            <h2 style="margin-bottom: 1.5rem;">Form Pembayaran</h2>
+            
+            <div class="payment-form">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" placeholder="Masukkan nama lengkap">
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Metode Pembayaran</label>
+                    <div class="payment-methods">
+                        <div class="payment-method active" onclick="selectPayment(this)">
+                            💳<br>Kartu Kredit
+                        </div>
+                        <div class="payment-method" onclick="selectPayment(this)">
+                            📱<br>GoPay
+                        </div>
+                        <div class="payment-method" onclick="selectPayment(this)">
+                            💰<br>OVO
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nomor Kartu</label>
+                    <input type="text" placeholder="1234 5678 9012 3456">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input type="text" placeholder="123">
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Kadaluarsa</label>
+                        <input type="text" placeholder="MM/YY">
+                    </div>
+                </div>
+
+                <button class="btn-pesan" onclick="showPage('konfirmasi')">Bayar Sekarang</button>
+            </div>
+        </div>
+
+        <!-- Page: Konfirmasi -->
+        <div id="konfirmasi" class="page">
+            <div class="success-message">
+                <div class="success-icon">✓</div>
+                <h2 style="color: #4CAF50; margin-bottom: 1rem;">Pembayaran Berhasil!</h2>
+                
+                <div class="qr-code">
+                    <div style="font-size: 4rem;">█▓▒░</div>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-item">
+                        <span>ID Pesanan:</span>
+                        <span style="color: #667eea; font-weight: bold;">12345</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+                    <button class="btn btn-signup">Cetak Tiket</button>
+                    <button class="btn btn-login">Kirim Email</button>
+                    <button class="btn btn-signup" onclick="showPage('beranda')">Kembali ke Beranda</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div>
+                <p style="color: #666;">Kontak: 0812-3456-7890 | Email: info@cinemaxx.com</p>
+            </div>
+            <div>
+                <a href="#" style="color: #666; text-decoration: none;">Kebijakan Privasi</a>
+            </div>
+            <div class="social-links">
+                <a href="#" class="social-link">FB</a>
+                <a href="#" class="social-link">IG</a>
+                <a href="#" class="social-link">TW</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Carousel functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Auto-play carousel
+        setInterval(() => {
+            changeSlide(1);
+        }, 5000);
+
+        // Page navigation
+        function showPage(pageName) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // Film selection
+        let selectedFilm = 'Avengers Endgame';
+        function pesanFilm(filmName) {
+            selectedFilm = filmName;
+            document.getElementById('filmName').textContent = filmName;
+            showPage('jadwal');
+        }
+
+        // Jadwal selection
+        let selectedTime = '14:00';
+        function selectJadwal(btn, time) {
+            document.querySelectorAll('.jadwal-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedTime = time;
+            document.getElementById('waktu').textContent = time;
+        }
+
+        // Seat selection
+        let selectedSeats = [];
+        const ticketPrice = 50000;
+
+        function selectSeat(seat, seatNumber) {
+            if (seat.classList.contains('occupied')) {
+                alert('Kursi sudah terisi!');
+                return;
+            }
+
+            if (seat.classList.contains('selected')) {
+                seat.classList.remove('selected');
+                seat.classList.add('available');
+                selectedSeats = selectedSeats.filter(s => s !== seatNumber);
+            } else {
+                seat.classList.remove('available');
+                seat.classList.add('selected');
+                selectedSeats.push(seatNumber);
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const seatsDisplay = selectedSeats.length > 0 ? selectedSeats.join(', ') : '-';
+            document.getElementById('selectedSeats').textContent = seatsDisplay;
+            
+            const total = selectedSeats.length * ticketPrice;
+            document.getElementById('totalPrice').textContent = 'Rp' + total.toLocaleString('id-ID');
+
+            // Update final seats in confirmation page
+            document.getElementById('finalSeats').textContent = seatsDisplay;
+        }
+
+        // Payment method selection
+        function selectPayment(method) {
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+            method.classList.add('active');
+        }
+
+        // Initialize
+        updateSummary();
+    </script>
+</body>
+</html><span>Film:</span>
+                        <span>Avengers Endgame</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Waktu:</span>
+                        <span>14:00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Kursi:</span>
+                        <span id="finalSeats">A1, A2</span>
+                    </div>
+                    <div class="summary-item summary-total">
+                        <span>Total:</span>
+                        <span>Rp100,000</span>
+                    </div>
+                    <div class="summary-item">
+                        
